@@ -8,15 +8,21 @@ namespace Webapi.AutoMapper
     {
         public MappingProfile()
         {
-
             CreateMap<TodoItem, TodoItemDto>()
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
+                           .ForMember(dest => dest.CategoryName,
+                                      opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty));
 
-            CreateMap<Category, CategoryDto>();
+            // Category → CategoryDto
+            CreateMap<Category, CategoryDto>()
+                .ForMember(dest => dest.Todos,
+                           opt => opt.MapFrom(src => src.TodoItems)); // Map collection
 
+            // Reverse mapping: DTO → Entity
+            CreateMap<TodoItemDto, TodoItem>()
+                .ForMember(dest => dest.Category, opt => opt.Ignore()); // Avoid EF circular issues
 
-            CreateMap<TodoItemDto, TodoItem>();
-            CreateMap<CategoryDto, Category>();
+            CreateMap<CategoryDto, Category>()
+                .ForMember(dest => dest.TodoItems, opt => opt.Ignore()); // Ignore collection to prevent accidental overwrite
         }
     }
 }
